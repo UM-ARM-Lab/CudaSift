@@ -90,16 +90,17 @@ set(
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 set(lib_headers
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/cudaSift/cudaImage.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/cudaSift/cudaSift.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/cudaSift/cudaSiftH.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/cudaSift/cudaSiftD.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/cudaSift/cudautils.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/cudaSift/image.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/cudaSift/sift.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/cudaSift/sift_host.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/cudaSift/sift_device.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/cudaSift/utils.h"
 )
 
 set(lib_sources
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/cudaImage.cu"
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/cudaSiftH.cu"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/image.cu"
+  # Developer note: sift_device.cu is included directly into sift_host, do not add here
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/sift_host.cu"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/matching.cu"
 )
 

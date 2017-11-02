@@ -8,14 +8,14 @@
 #include <iostream>
 #include <algorithm>
 
-#include <cudaSift/cudautils.h>
+#include <cudaSift/utils.h>
 
-#include <cudaSift/cudaImage.h>
-#include <cudaSift/cudaSift.h>
-#include <cudaSift/cudaSiftD.h>
-#include <cudaSift/cudaSiftH.h>
+#include <cudaSift/image.h>
+#include <cudaSift/sift.h>
+#include <cudaSift/sift_device.h>
+#include <cudaSift/sift_host.h>
 
-#include "cudaSiftD.cu"
+#include "sift_device.cu"
 
 void InitCuda(int devNum)
 {

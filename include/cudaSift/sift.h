@@ -1,7 +1,7 @@
 #ifndef CUDASIFT_H
 #define CUDASIFT_H
 
-#include <cudaSift/cudaImage.h>
+#include <cudaSift/image.h>
 
 typedef struct {
   float xpos;

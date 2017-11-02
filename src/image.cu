@@ -4,8 +4,8 @@
 
 #include <cstdio>
 
-#include <cudaSift/cudautils.h>
-#include <cudaSift/cudaImage.h>
+#include <cudaSift/utils.h>
+#include <cudaSift/image.h>
 
 int iDivUp(int a, int b) { return (a%b != 0) ? (a/b + 1) : (a/b); }
 int iDivDown(int a, int b) { return a/b; }
