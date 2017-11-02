@@ -155,7 +155,7 @@ target_link_libraries(${PROJECT_NAME})
 ########################################################################################
 if (NOT CUDA_SIFT_HAS_PARENT)
   # OpenCV dependency: need 'core', 'imgproc', 'imgcodecs', and 'highgui'
-  find_package(OpenCV COMPONENTS "core;imgproc;imgcodecs;highgui")
+  find_package(OpenCV COMPONENTS core imgproc imgcodecs highgui REQUIRED)
   if (NOT OpenCV_FOUND)
     message(FATAL_ERROR "OpenCV is required to build the ${PROJECT_NAME} demo.")
   endif()
