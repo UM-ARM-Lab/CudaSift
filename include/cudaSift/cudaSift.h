@@ -1,11 +1,11 @@
 #ifndef CUDASIFT_H
 #define CUDASIFT_H
 
-#include "cudaImage.h"
+#include <cudaSift/cudaImage.h>
 
 typedef struct {
   float xpos;
-  float ypos;   
+  float ypos;
   float scale;
   float sharpness;
   float edgeness;

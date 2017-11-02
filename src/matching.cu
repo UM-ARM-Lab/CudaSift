@@ -1,5 +1,5 @@
-#include "cudaSift.h"
-#include "cudautils.h"
+#include <cudaSift/cudaSift.h>
+#include <cudaSift/cudautils.h>
 
 //================= Device matching functions =====================//
 
@@ -88,7 +88,7 @@ __global__ void FindMaxCorr(float *corrData, SiftPoint *sift1, SiftPoint *sift2,
       maxScor2[idx] = val;
   }
   //if (p1==1)
-  //  printf("tx = %d, score = %.2f, scor2 = %.2f, index = %d\n", 
+  //  printf("tx = %d, score = %.2f, scor2 = %.2f, index = %d\n",
   //	   tx, maxScore[idx], maxScor2[idx], maxIndex[idx]);
   __syncthreads();
   for (int len=8;len>0;len/=2) {
@@ -106,8 +106,8 @@ __global__ void FindMaxCorr(float *corrData, SiftPoint *sift1, SiftPoint *sift2,
 	maxScor2[idx] = va2;
     }
     __syncthreads();
-    //if (p1==1 && tx<len) 
-    //  printf("tx = %d, score = %.2f, scor2 = %.2f, index = %d\n", 
+    //if (p1==1 && tx<len)
+    //  printf("tx = %d, score = %.2f, scor2 = %.2f, index = %d\n",
     //	     tx, maxScore[idx], maxScor2[idx], maxIndex[idx]);
   }
   if (tx==6)
@@ -122,13 +122,13 @@ __global__ void FindMaxCorr(float *corrData, SiftPoint *sift1, SiftPoint *sift2,
     sift1[p1].match_ypos = sift2[maxIndex[ty*16]].ypos;
   __syncthreads();
   //if (tx==0)
-  //  printf("index = %d/%d, score = %.2f, ambiguity = %.2f, match = %d\n", 
+  //  printf("index = %d/%d, score = %.2f, ambiguity = %.2f, match = %d\n",
   //	p1, numPts1, sift1[p1].score, sift1[p1].ambiguity, sift1[p1].match);
 }
 
 template <int size>
-__device__ void InvertMatrix(float elem[size][size], float res[size][size]) 
-{  
+__device__ void InvertMatrix(float elem[size][size], float res[size][size])
+{
   int indx[size];
   float b[size];
   float vv[size];
@@ -139,8 +139,8 @@ __device__ void InvertMatrix(float elem[size][size], float res[size][size])
   for (int i=0;i<size;i++) { // find biggest element for each row
     float big = 0.0;
     for (int j=0;j<size;j++) {
-      float temp = fabs(elem[i][j]); 
-      if (temp>big) 
+      float temp = fabs(elem[i][j]);
+      if (temp>big)
 	big = temp;
     }
     if (big>0.0)
@@ -148,7 +148,7 @@ __device__ void InvertMatrix(float elem[size][size], float res[size][size])
     else
       vv[i] = 1e16;
   }
-  for (int j=0;j<size;j++) { 
+  for (int j=0;j<size;j++) {
     for (int i=0;i<j;i++) { // i<j
       float sum = elem[i][j]; // i<j (lower left)
       for (int k=0;k<i;k++) // k<i<j
@@ -164,7 +164,7 @@ __device__ void InvertMatrix(float elem[size][size], float res[size][size])
       float dum = vv[i]*fabs(sum);
       if (dum>=big) {
 	big = dum;
-	imax = i;  
+	imax = i;
       }
     }
     if (j!=imax) { // imax>j
@@ -186,8 +186,8 @@ __device__ void InvertMatrix(float elem[size][size], float res[size][size])
     }
   }
   for (int j=0;j<size;j++) {
-    for (int k=0;k<size;k++) 
-      b[k] = 0.0;  
+    for (int k=0;k<size;k++)
+      b[k] = 0.0;
     b[j] = 1.0;
     int ii = -1;
     for (int i=0;i<size;i++) {
@@ -195,7 +195,7 @@ __device__ void InvertMatrix(float elem[size][size], float res[size][size])
       float sum = b[ip];
       b[ip] = b[i];
       if (ii!=-1)
-	for (int j=ii;j<i;j++) 
+	for (int j=ii;j<i;j++)
 	  sum -= elem[i][j]*b[j]; // i>j (upper right)
       else if (sum!=0.0)
         ii = i;
@@ -203,7 +203,7 @@ __device__ void InvertMatrix(float elem[size][size], float res[size][size])
     }
     for (int i=size-1;i>=0;i--) {
       float sum = b[i];
-      for (int j=i+1;j<size;j++) 
+      for (int j=i+1;j<size;j++)
 	sum -= elem[i][j]*b[j]; // i<j (lower left)
       b[i] = sum/elem[i][i]; // i==i (upper right)
     }
@@ -212,11 +212,11 @@ __device__ void InvertMatrix(float elem[size][size], float res[size][size])
   }
 }
 
-__global__ void ComputeHomographies(float *coord, int *randPts, float *homo, 
-  int numPts) 
+__global__ void ComputeHomographies(float *coord, int *randPts, float *homo,
+  int numPts)
 {
   float a[8][8], ia[8][8];
-  float b[8]; 
+  float b[8];
   const int bx = blockIdx.x;
   const int tx = threadIdx.x;
   const int idx = blockDim.x*bx + tx;
@@ -248,7 +248,7 @@ __global__ void ComputeHomographies(float *coord, int *randPts, float *homo,
   __syncthreads();
   for (int j=0;j<8;j++) {
     float sum = 0.0f;
-    for (int i=0;i<8;i++) 
+    for (int i=0;i<8;i++)
       sum += ia[j][i]*b[i];
     homo[j*numLoops+idx] = sum;
   }
@@ -256,9 +256,9 @@ __global__ void ComputeHomographies(float *coord, int *randPts, float *homo,
 }
 
 #define TESTHOMO_TESTS 16 // number of tests per block,  alt. 32, 32
-#define TESTHOMO_LOOPS 16 // number of loops per block,  alt.  8, 16 
+#define TESTHOMO_LOOPS 16 // number of loops per block,  alt.  8, 16
 
-__global__ void TestHomographies(float *d_coord, float *d_homo, 
+__global__ void TestHomographies(float *d_coord, float *d_homo,
   int *d_counts, int numPts, float thresh2)
 {
   __shared__ float homo[8*TESTHOMO_LOOPS];
@@ -271,7 +271,7 @@ __global__ void TestHomographies(float *d_coord, float *d_homo,
     homo[tx*8+ty] = d_homo[idx+ty*numLoops];
   __syncthreads();
   float a[8];
-  for (int i=0;i<8;i++) 
+  for (int i=0;i<8;i++)
     a[i] = homo[ty*8+i];
   int cnt = 0;
   for (int i=tx;i<numPts;i+=TESTHOMO_TESTS) {
@@ -374,7 +374,7 @@ double FindHomography(SiftData &data, float *homography, int *numMatches, int nu
     checkMsg("TestHomographies() execution failed\n");
     safeCall(cudaMemcpy(h_randPts, d_randPts, sizeof(int)*numLoops, cudaMemcpyDeviceToHost));
     int maxIndex = -1, maxCount = -1;
-    for (int i=0;i<numLoops;i++) 
+    for (int i=0;i<numLoops;i++)
       if (h_randPts[i]>maxCount) {
 	maxCount = h_randPts[i];
 	maxIndex = i;
@@ -399,7 +399,7 @@ double MatchSiftData(SiftData &data1, SiftData &data2)
   TimerGPU timer(0);
   int numPts1 = data1.numPts;
   int numPts2 = data2.numPts;
-  if (!numPts1 || !numPts2) 
+  if (!numPts1 || !numPts2)
     return 0.0;
 #ifdef MANAGEDMEM
   SiftPoint *sift1 = data1.m_data;
@@ -410,8 +410,8 @@ double MatchSiftData(SiftData &data1, SiftData &data2)
   SiftPoint *sift1 = data1.d_data;
   SiftPoint *sift2 = data2.d_data;
 #endif
-  
-  float *d_corrData; 
+
+  float *d_corrData;
   int corrWidth = iDivUp(numPts2, 16)*16;
   int corrSize = sizeof(float)*numPts1*corrWidth;
   safeCall(cudaMalloc((void **)&d_corrData, corrSize));
@@ -442,5 +442,5 @@ double MatchSiftData(SiftData &data1, SiftData &data2)
   printf("MatchSiftData time =          %.2f ms\n", gpuTime);
 #endif
   return gpuTime;
-}		 
-  
+}
+
