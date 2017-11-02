@@ -17,6 +17,8 @@
 
 #include "sift_device.cu"
 
+namespace cudaSift {
+
 void InitCuda(int devNum)
 {
   int nDevices;
@@ -37,7 +39,7 @@ void InitCuda(int devNum)
 	 2.0*prop.memoryClockRate*(prop.memoryBusWidth/8)/1.0e6);
 }
 
-void ExtractSift(SiftData &siftData, CudaImage &img, int numOctaves, double initBlur, float thresh, float lowestScale, bool scaleUp)
+void ExtractSift(SiftData &siftData, Image &img, int numOctaves, double initBlur, float thresh, float lowestScale, bool scaleUp)
 {
   TimerGPU timer(0);
   int totPts = 0;
@@ -64,7 +66,7 @@ void ExtractSift(SiftData &siftData, CudaImage &img, int numOctaves, double init
   safeCall(cudaMallocPitch((void **)&memoryTmp, &pitch, (size_t)4096, (size+4095)/4096*sizeof(float)));
   float *memorySub = memoryTmp + sizeTmp;
 
-  CudaImage lowImg;
+  Image lowImg;
   lowImg.Allocate(width, height, iAlignUp(width, 128), false, memorySub);
   if (!scaleUp) {
     LowPass(lowImg, img, max(initBlur, 0.001f));
@@ -72,7 +74,7 @@ void ExtractSift(SiftData &siftData, CudaImage &img, int numOctaves, double init
     safeCall(cudaMemcpyFromSymbol(&siftData.numPts, d_PointCounter, sizeof(int)));
     siftData.numPts = (siftData.numPts<siftData.maxPts ? siftData.numPts : siftData.maxPts);
   } else {
-    CudaImage upImg;
+    Image upImg;
     upImg.Allocate(width, height, iAlignUp(width, 128), false, memoryTmp);
     ScaleUp(upImg, img);
     LowPass(lowImg, upImg, max(initBlur, 0.001f));
@@ -95,16 +97,16 @@ void ExtractSift(SiftData &siftData, CudaImage &img, int numOctaves, double init
 #endif
 }
 
-extern double DynamicMain(CudaImage &img, SiftData &siftData, int numOctaves, double initBlur, float thresh, float lowestScale, float edgeLimit, float *memoryTmp);
+extern double DynamicMain(Image &img, SiftData &siftData, int numOctaves, double initBlur, float thresh, float lowestScale, float edgeLimit, float *memoryTmp);
 
-void ExtractSiftLoop(SiftData &siftData, CudaImage &img, int numOctaves, double initBlur, float thresh, float lowestScale, float subsampling, float *memoryTmp, float *memorySub)
+void ExtractSiftLoop(SiftData &siftData, Image &img, int numOctaves, double initBlur, float thresh, float lowestScale, float subsampling, float *memoryTmp, float *memorySub)
 {
   TimerGPU timer(0);
 #if 1
   int w = img.width;
   int h = img.height;
   if (numOctaves>1) {
-    CudaImage subImg;
+    Image subImg;
     int p = iAlignUp(w/2, 128);
     subImg.Allocate(w/2, h/2, p, false, memorySub);
     ScaleDown(subImg, img, 0.5f);
@@ -122,11 +124,11 @@ void ExtractSiftLoop(SiftData &siftData, CudaImage &img, int numOctaves, double 
 #endif
 }
 
-void ExtractSiftOctave(SiftData &siftData, CudaImage &img, double initBlur, float thresh, float lowestScale, float subsampling, float *memoryTmp)
+void ExtractSiftOctave(SiftData &siftData, Image &img, double initBlur, float thresh, float lowestScale, float subsampling, float *memoryTmp)
 {
   const int nd = NUM_SCALES + 3;
   TimerGPU timer0;
-  CudaImage diffImg[nd];
+  Image diffImg[nd];
   int w = img.width;
   int h = img.height;
   int p = iAlignUp(w, 128);
@@ -260,7 +262,7 @@ void PrintSiftData(SiftData &data)
 // Host side master functions
 ///////////////////////////////////////////////////////////////////////////////
 
-double ScaleDown(CudaImage &res, CudaImage &src, float variance)
+double ScaleDown(Image &res, Image &src, float variance)
 {
   if (res.d_data==NULL || src.d_data==NULL) {
     printf("ScaleDown: missing data\n");
@@ -282,7 +284,7 @@ double ScaleDown(CudaImage &res, CudaImage &src, float variance)
   return 0.0;
 }
 
-double ScaleUp(CudaImage &res, CudaImage &src)
+double ScaleUp(Image &res, Image &src)
 {
   if (res.d_data==NULL || src.d_data==NULL) {
     printf("ScaleUp: missing data\n");
@@ -331,7 +333,7 @@ double RescalePositions(SiftData &siftData, float scale)
   return 0.0;
 }
 
-double LowPass(CudaImage &res, CudaImage &src, float scale)
+double LowPass(Image &res, Image &src, float scale)
 {
   float kernel[16];
   float kernelSum = 0.0f;
@@ -355,7 +357,7 @@ double LowPass(CudaImage &res, CudaImage &src, float scale)
 
 //==================== Multi-scale functions ===================//
 
-double LaplaceMulti(cudaTextureObject_t texObj, CudaImage &baseImage, CudaImage *results, float baseBlur, float diffScale, float initBlur)
+double LaplaceMulti(cudaTextureObject_t texObj, Image &baseImage, Image *results, float baseBlur, float diffScale, float initBlur)
 {
   float kernel[12*16];
   float scale = baseBlur;
@@ -385,7 +387,7 @@ double LaplaceMulti(cudaTextureObject_t texObj, CudaImage &baseImage, CudaImage 
   return 0.0;
 }
 
-double FindPointsMulti(CudaImage *sources, SiftData &siftData, float thresh, float edgeLimit, float scale, float factor, float lowestScale, float subsampling)
+double FindPointsMulti(Image *sources, SiftData &siftData, float thresh, float edgeLimit, float scale, float factor, float lowestScale, float subsampling)
 {
   if (sources->d_data==NULL) {
     printf("FindPointsMulti: missing data\n");
@@ -417,3 +419,4 @@ double FindPointsMulti(CudaImage *sources, SiftData &siftData, float thresh, flo
   return 0.0;
 }
 
+} // namespace cudaSift

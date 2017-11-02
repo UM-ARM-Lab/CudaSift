@@ -7,12 +7,14 @@
 #include <cudaSift/utils.h>
 #include <cudaSift/image.h>
 
+namespace cudaSift {
+
 int iDivUp(int a, int b) { return (a%b != 0) ? (a/b + 1) : (a/b); }
 int iDivDown(int a, int b) { return a/b; }
 int iAlignUp(int a, int b) { return (a%b != 0) ?  (a - a%b + b) : a; }
 int iAlignDown(int a, int b) { return a - a%b; }
 
-void CudaImage::Allocate(int w, int h, int p, bool host, float *devmem, float *hostmem)
+void Image::Allocate(int w, int h, int p, bool host, float *devmem, float *hostmem)
 {
   width = w;
   height = h;
@@ -33,13 +35,13 @@ void CudaImage::Allocate(int w, int h, int p, bool host, float *devmem, float *h
   }
 }
 
-CudaImage::CudaImage() :
+Image::Image() :
   width(0), height(0), d_data(NULL), h_data(NULL), t_data(NULL), d_internalAlloc(false), h_internalAlloc(false)
 {
 
 }
 
-CudaImage::~CudaImage()
+Image::~Image()
 {
   if (d_internalAlloc && d_data!=NULL)
     safeCall(cudaFree(d_data));
@@ -52,7 +54,7 @@ CudaImage::~CudaImage()
   t_data = NULL;
 }
 
-double CudaImage::Download()
+double Image::Download()
 {
   TimerGPU timer(0);
   int p = sizeof(float)*pitch;
@@ -65,7 +67,7 @@ double CudaImage::Download()
   return gpuTime;
 }
 
-double CudaImage::Readback()
+double Image::Readback()
 {
   TimerGPU timer(0);
   int p = sizeof(float)*pitch;
@@ -77,7 +79,7 @@ double CudaImage::Readback()
   return gpuTime;
 }
 
-double CudaImage::InitTexture()
+double Image::InitTexture()
 {
   TimerGPU timer(0);
   cudaChannelFormatDesc t_desc = cudaCreateChannelDesc<float>();
@@ -91,7 +93,7 @@ double CudaImage::InitTexture()
   return gpuTime;
 }
 
-double CudaImage::CopyToTexture(CudaImage &dst, bool host)
+double Image::CopyToTexture(Image &dst, bool host)
 {
   if (dst.t_data==NULL) {
     printf("Error CopyToTexture: No texture data\n");
@@ -113,3 +115,5 @@ double CudaImage::CopyToTexture(CudaImage &dst, bool host)
 #endif
   return gpuTime;
 }
+
+} // namespace cudaSift

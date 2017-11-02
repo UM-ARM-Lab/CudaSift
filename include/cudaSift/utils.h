@@ -1,5 +1,5 @@
-#ifndef CUDAUTILS_H
-#define CUDAUTILS_H
+#ifndef CUDA_SIFT_UTILS_H
+#define CUDA_SIFT_UTILS_H
 
 #include <cstdio>
 #include <iostream>
@@ -11,6 +11,8 @@
 #define safeCall(err)       __safeCall(err, __FILE__, __LINE__)
 #define safeThreadSync()    __safeThreadSync(__FILE__, __LINE__)
 #define checkMsg(msg)       __checkMsg(msg, __FILE__, __LINE__)
+
+namespace cudaSift {
 
 inline void __safeCall(cudaError err, const char *file, const int line)
 {
@@ -46,13 +48,13 @@ inline bool deviceInit(int dev)
     fprintf(stderr, "CUDA error: no devices supporting CUDA.\n");
     return false;
   }
-  if (dev < 0) dev = 0;						
+  if (dev < 0) dev = 0;
   if (dev > deviceCount-1) dev = deviceCount - 1;
   cudaDeviceProp deviceProp;
   safeCall(cudaGetDeviceProperties(&deviceProp, dev));
   if (deviceProp.major < 1) {
     fprintf(stderr, "error: device does not support CUDA.\n");
-    return false;					
+    return false;
   }
   safeCall(cudaSetDevice(dev));
   return true;
@@ -60,20 +62,20 @@ inline bool deviceInit(int dev)
 
 class TimerGPU {
 public:
-  cudaEvent_t start, stop; 
+  cudaEvent_t start, stop;
   cudaStream_t stream;
   TimerGPU(cudaStream_t stream_ = 0) : stream(stream_) {
-    cudaEventCreate(&start); 
-    cudaEventCreate(&stop); 
-    cudaEventRecord(start, stream); 
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord(start, stream);
   }
   ~TimerGPU() {
-    cudaEventDestroy(start); 
-    cudaEventDestroy(stop);  
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
   }
   float read() {
-    cudaEventRecord(stop, stream); 
-    cudaEventSynchronize(stop); 
+    cudaEventRecord(stop, stream);
+    cudaEventSynchronize(stop);
     float time;
     cudaEventElapsedTime(&time, start, stop);
     return time;
@@ -106,6 +108,7 @@ public:
   }
 };
 
+} // namespace cudaSift
 
-#endif
+#endif // CUDA_SIFT_UTILS_H
 

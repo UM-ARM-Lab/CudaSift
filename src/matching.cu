@@ -1,6 +1,8 @@
 #include <cudaSift/sift.h>
 #include <cudaSift/utils.h>
 
+namespace cudaSift {
+
 //================= Device matching functions =====================//
 
 __global__ void MatchSiftPoints(SiftPoint *sift1, SiftPoint *sift2, float *corrData, int numPts1, int numPts2)
@@ -444,3 +446,4 @@ double MatchSiftData(SiftData &data1, SiftData &data2)
   return gpuTime;
 }
 
+} // namespace cudaSIft

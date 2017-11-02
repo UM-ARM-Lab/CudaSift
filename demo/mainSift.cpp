@@ -13,11 +13,11 @@
 #include <cudaSift/image.h>
 #include <cudaSift/sift.h>
 
-int ImproveHomography(SiftData &data, float *homography, int numLoops, float minScore, float maxAmbiguity, float thresh);
-void PrintMatchData(SiftData &siftData1, SiftData &siftData2, CudaImage &img);
-void MatchAll(SiftData &siftData1, SiftData &siftData2, float *homography);
+int ImproveHomography(cudaSift::SiftData &data, float *homography, int numLoops, float minScore, float maxAmbiguity, float thresh);
+void PrintMatchData(cudaSift::SiftData &siftData1, cudaSift::SiftData &siftData2, cudaSift::Image &img);
+void MatchAll(cudaSift::SiftData &siftData1, cudaSift::SiftData &siftData2, float *homography);
 
-double ScaleUp(CudaImage &res, CudaImage &src);
+double ScaleUp(cudaSift::Image &res, cudaSift::Image &src);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Main program
@@ -38,33 +38,34 @@ int main(int argc, char **argv)
 
   // Initial Cuda images and download images to device
   std::cout << "Initializing data..." << std::endl;
-  InitCuda(devNum);
-  CudaImage img1, img2;
-  img1.Allocate(w, h, iAlignUp(w, 128), false, NULL, (float*)limg.data);
-  img2.Allocate(w, h, iAlignUp(w, 128), false, NULL, (float*)rimg.data);
+  cudaSift::InitCuda(devNum);
+  cudaSift::Image img1, img2;
+  img1.Allocate(w, h, cudaSift::iAlignUp(w, 128), false, NULL, (float*)limg.data);
+  img2.Allocate(w, h, cudaSift::iAlignUp(w, 128), false, NULL, (float*)rimg.data);
   img1.Download();
   img2.Download();
 
   // Extract Sift features from images
-  SiftData siftData1, siftData2;
+  cudaSift::SiftData siftData1, siftData2;
   float initBlur = 1.0f;
   float thresh = 3.5f;
-  InitSiftData(siftData1, 32768, true, true);
-  InitSiftData(siftData2, 32768, true, true);
+  cudaSift::InitSiftData(siftData1, 32768, true, true);
+  cudaSift::InitSiftData(siftData2, 32768, true, true);
 
   // A bit of benchmarking
   for (thresh=1.00f;thresh<=4.01f;thresh+=0.50f) {
     for (int i=0;i<10;i++) {
-      ExtractSift(siftData1, img1, 5, initBlur, thresh, 0.0f, false);
-      ExtractSift(siftData2, img2, 5, initBlur, thresh, 0.0f, false);
+      cudaSift::ExtractSift(siftData1, img1, 5, initBlur, thresh, 0.0f, false);
+      cudaSift::ExtractSift(siftData2, img2, 5, initBlur, thresh, 0.0f, false);
     }
 
     // Match Sift features and find a homography
     for (int i=0;i<1;i++)
-      MatchSiftData(siftData1, siftData2);
+      cudaSift::MatchSiftData(siftData1, siftData2);
     float homography[9];
     int numMatches;
-    FindHomography(siftData1, homography, &numMatches, 10000, 0.00f, 0.80f, 5.0);
+    cudaSift::FindHomography(siftData1, homography, &numMatches, 10000, 0.00f, 0.80f, 5.0);
+    // ImproveHomography is in demo/geomFuncs.cpp
     int numFit = ImproveHomography(siftData1, homography, 5, 0.00f, 0.80f, 3.0);
 
     std::cout << "Number of original features: " <<  siftData1.numPts << " " << siftData2.numPts << std::endl;
@@ -76,8 +77,8 @@ int main(int argc, char **argv)
   cv::imwrite("data/limg_pts.pgm", limg);
 
   // Free Sift data from device
-  FreeSiftData(siftData1);
-  FreeSiftData(siftData2);
+  cudaSift::FreeSiftData(siftData1);
+  cudaSift::FreeSiftData(siftData2);
 
   std::cout << "SIFT Correspondences saved to 'data/limg_pts.pgm'." << std::endl;
   // Display the results
@@ -99,14 +100,14 @@ int main(int argc, char **argv)
   return 0;
 }
 
-void MatchAll(SiftData &siftData1, SiftData &siftData2, float *homography)
+void MatchAll(cudaSift::SiftData &siftData1, cudaSift::SiftData &siftData2, float *homography)
 {
 #ifdef MANAGEDMEM
-  SiftPoint *sift1 = siftData1.m_data;
-  SiftPoint *sift2 = siftData2.m_data;
+  cudaSift::SiftPoint *sift1 = siftData1.m_data;
+  cudaSift::SiftPoint *sift2 = siftData2.m_data;
 #else
-  SiftPoint *sift1 = siftData1.h_data;
-  SiftPoint *sift2 = siftData2.h_data;
+  cudaSift::SiftPoint *sift1 = siftData1.h_data;
+  cudaSift::SiftPoint *sift2 = siftData2.h_data;
 #endif
   int numPts1 = siftData1.numPts;
   int numPts2 = siftData2.numPts;
@@ -145,15 +146,15 @@ void MatchAll(SiftData &siftData1, SiftData &siftData2, float *homography)
   std::cout << "Number of founds: " << numFound << std::endl;
 }
 
-void PrintMatchData(SiftData &siftData1, SiftData &siftData2, CudaImage &img)
+void PrintMatchData(cudaSift::SiftData &siftData1, cudaSift::SiftData &siftData2, cudaSift::Image &img)
 {
   int numPts = siftData1.numPts;
 #ifdef MANAGEDMEM
-  SiftPoint *sift1 = siftData1.m_data;
-  SiftPoint *sift2 = siftData2.m_data;
+  cudaSift::SiftPoint *sift1 = siftData1.m_data;
+  cudaSift::SiftPoint *sift2 = siftData2.m_data;
 #else
-  SiftPoint *sift1 = siftData1.h_data;
-  SiftPoint *sift2 = siftData2.h_data;
+  cudaSift::SiftPoint *sift1 = siftData1.h_data;
+  cudaSift::SiftPoint *sift2 = siftData2.h_data;
 #endif
   float *h_img = img.h_data;
   int w = img.width;

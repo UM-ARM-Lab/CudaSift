@@ -6,6 +6,8 @@
 #include <cudaSift/sift_device.h>
 #include <cudaSift/sift.h>
 
+namespace cudaSift {
+
 ///////////////////////////////////////////////////////////////////////////////
 // Kernel configuration
 ///////////////////////////////////////////////////////////////////////////////
@@ -664,4 +666,4 @@ __global__ void FindPointsMulti(float *d_Data0, SiftPoint *d_Sift, int width, in
   }
 }
 
-
+} // namespace cudaSift

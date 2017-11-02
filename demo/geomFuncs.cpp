@@ -4,14 +4,14 @@
 
 #include <cudaSift/sift.h>
 
-int ImproveHomography(SiftData &data, float *homography, int numLoops, float minScore, float maxAmbiguity, float thresh)
+int ImproveHomography(cudaSift::SiftData &data, float *homography, int numLoops, float minScore, float maxAmbiguity, float thresh)
 {
 #ifdef MANAGEDMEM
-  SiftPoint *mpts = data.m_data;
+  cudaSift::SiftPoint *mpts = data.m_data;
 #else
   if (data.h_data==NULL)
     return 0;
-  SiftPoint *mpts = data.h_data;
+  cudaSift::SiftPoint *mpts = data.h_data;
 #endif
   float limit = thresh*thresh;
   int numPts = data.numPts;
@@ -24,7 +24,7 @@ int ImproveHomography(SiftData &data, float *homography, int numLoops, float min
     M = cv::Scalar(0.0);
     X = cv::Scalar(0.0);
     for (int i=0;i<numPts;i++) {
-      SiftPoint &pt = mpts[i];
+      cudaSift::SiftPoint &pt = mpts[i];
       if (pt.score<minScore || pt.ambiguity>maxAmbiguity)
 	continue;
       float den = A.at<double>(6)*pt.xpos + A.at<double>(7)*pt.ypos + 1.0f;
@@ -57,7 +57,7 @@ int ImproveHomography(SiftData &data, float *homography, int numLoops, float min
   }
   int numfit = 0;
   for (int i=0;i<numPts;i++) {
-    SiftPoint &pt = mpts[i];
+    cudaSift::SiftPoint &pt = mpts[i];
     float den = A.at<double>(6)*pt.xpos + A.at<double>(7)*pt.ypos + 1.0;
     float dx = (A.at<double>(0)*pt.xpos + A.at<double>(1)*pt.ypos + A.at<double>(2)) / den - pt.match_xpos;
     float dy = (A.at<double>(3)*pt.xpos + A.at<double>(4)*pt.ypos + A.at<double>(5)) / den - pt.match_ypos;
