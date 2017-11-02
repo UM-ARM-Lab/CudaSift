@@ -89,12 +89,7 @@ int main(int argc, char **argv)
     img = cv::imread("data/limg_pts.pgm", cv::IMREAD_COLOR);
     // display the image
     cv::imshow("SIFT Correspondences", img);
-    while (true) {
-      int key = cv::waitKey(100);
-      if (key == 27) break; // exit with Escape
-      if (cv::getWindowProperty("SIFT Correspondences", cv::WND_PROP_VISIBLE) < 1) break;
-    }
-    cv::destroyWindow("SIFT Correspondences");
+    cv::waitKey(0);
   }
 
   return 0;

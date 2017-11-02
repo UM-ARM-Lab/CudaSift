@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.12) # for rpath handling
 
 project(cudaSift)
 
@@ -19,6 +19,18 @@ find_package(CUDA)
 if (NOT CUDA_FOUND)
   message(FATAL_ERROR "CUDA not found. ${PROJECT_NAME} cannot not be built.")
 endif(NOT CUDA_FOUND)
+
+# Set a default build configuration to Release
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+               "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
+
+if(APPLE)
+  set(CMAKE_MACOSX_RPATH ON)
+endif()
+
 
 ########################################################################################
 # Options for build configuration.                                                     #
@@ -142,8 +154,8 @@ target_link_libraries(${PROJECT_NAME})
 # Demo application.                                                                    #
 ########################################################################################
 if (NOT CUDA_SIFT_HAS_PARENT)
-  # OpenCV dependency: need 'core', 'improc', 'imcodecs', and 'highgui'
-  find_package(OpenCV COMPONENTS "core;improc;imgcodecs;highgui")
+  # OpenCV dependency: need 'core', 'imgproc', 'imgcodecs', and 'highgui'
+  find_package(OpenCV COMPONENTS "core;imgproc;imgcodecs;highgui")
   if (NOT OpenCV_FOUND)
     message(FATAL_ERROR "OpenCV is required to build the ${PROJECT_NAME} demo.")
   endif()
