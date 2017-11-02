@@ -156,9 +156,6 @@ target_link_libraries(${PROJECT_NAME})
 if (NOT CUDA_SIFT_HAS_PARENT)
   # OpenCV dependency: need 'core', 'imgproc', 'imgcodecs', and 'highgui'
   find_package(OpenCV COMPONENTS core imgproc imgcodecs highgui REQUIRED)
-  if (NOT OpenCV_FOUND)
-    message(FATAL_ERROR "OpenCV is required to build the ${PROJECT_NAME} demo.")
-  endif()
   if (OpenCV_VERSION VERSION_LESS 3.0.0)
     # Not sure what the OpenCV 2.x action is, warn and then likely link failure
     message(WARNING "OpenCV 3.x linkage was requested, the app may not link.  `imread` function was relocated to 'imgcodecs' module.")
