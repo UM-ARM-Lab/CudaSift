@@ -378,8 +378,8 @@ double FindHomography(SiftData &data, float *homography, int *numMatches, int nu
     int maxIndex = -1, maxCount = -1;
     for (int i=0;i<numLoops;i++)
       if (h_randPts[i]>maxCount) {
-	maxCount = h_randPts[i];
-	maxIndex = i;
+        maxCount = h_randPts[i];
+        maxIndex = i;
       }
     *numMatches = maxCount;
     safeCall(cudaMemcpy2D(homography, szFl, &d_homo[maxIndex], sizeof(float)*numLoops, szFl, 8, cudaMemcpyDeviceToHost));

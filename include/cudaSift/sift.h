@@ -23,6 +23,48 @@ typedef struct {
   float data[128];
 } SiftPoint;
 
+// original definitions
+// __constant__ float d_Threshold[2];
+// __constant__ float d_Scales[8], d_Factor;
+// __constant__ float d_EdgeLimit;
+// __constant__ int d_MaxNumPoints;
+
+// __device__ unsigned int d_PointCounter[1];
+// __constant__ float d_Kernel1[5];
+// __constant__ float d_Kernel2[12*16];
+
+#define KPARAMS_THRESHOLD_SIZE 2
+#define KENREL_THRESHOLD_SIZE_BYTES (sizeof(float)*KPARAMS_THRESHOLD_SIZE)
+
+#define KPARAMS_SCALES_SIZE 8
+#define KPARAMS_SCALES_SIZE_BYTES (sizeof(float)*KPARAMS_SCALES_SIZE)
+
+#define KPARAMS_FACTOR_SIZE_BYTES (sizeof(float))
+
+#define KPARAMS_EDGE_LIMIT_SIZE_BYTES (sizeof(float))
+
+#define KPARAMS_MAX_NUM_POINTS_SIZE_BYTES (sizeof(int))
+
+#define KPARAMS_POINT_COUNTER_SIZE 1
+#define KPARAMS_POINT_COUNTER_SIZE_BYTES (sizeof(unsigned int)*KPARAMS_POINT_COUNTER_SIZE)
+
+#define KPARAMS_KERNEL_1_SIZE 5
+#define KPARAMS_KERNEL_1_SIZE_BYTES (sizeof(float)*KPARAMS_KERNEL_1_SIZE)
+
+#define KPARAMS_KERNEL_2_SIZE (12*16)
+#define KPARAMS_KERNEL_2_SIZE_BYTES (sizeof(float)*KPARAMS_KERNEL_2_SIZE)
+
+typedef struct {
+  float d_Threshold[KPARAMS_THRESHOLD_SIZE];
+  float d_Scales[KPARAMS_SCALES_SIZE], d_Factor;
+  float d_EdgeLimit;
+  int d_MaxNumPoints;
+
+  unsigned int d_PointCounter[KPARAMS_POINT_COUNTER_SIZE];
+  float d_Kernel1[KPARAMS_KERNEL_1_SIZE];
+  float d_Kernel2[KPARAMS_KERNEL_2_SIZE];
+} SiftKernelParams;
+
 typedef struct {
   int numPts;         // Number of available Sift points
   int maxPts;         // Number of allocated Sift points
@@ -31,6 +73,9 @@ typedef struct {
 #else
   SiftPoint *h_data;  // Host (CPU) data
   SiftPoint *d_data;  // Device (GPU) data
+
+  SiftKernelParams *h_KernelParams;
+  SiftKernelParams *d_KernelParams;
 #endif
 } SiftData;
 
