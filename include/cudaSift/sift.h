@@ -76,12 +76,22 @@ typedef struct {
 
   SiftKernelParams *h_KernelParams;
   SiftKernelParams *d_KernelParams;
+
+  /* Set this via InitSiftData last parameter, if unspecified will be stream 0 AKA
+   * default CUDA stream
+   *
+   * NOTE: it is *ASSUMED* that the user is creating / destroying streams on their own,
+   *       this parameter is here so that memory copies / kernel launches can be
+   *       specified on this stream, but no creation / destruction will ever be
+   *       performed by this library.
+   */
+  cudaStream_t stream;
 #endif
 } SiftData;
 
 void InitCuda(int devNum = 0);
 void ExtractSift(SiftData &siftData, Image &img, int numOctaves, double initBlur, float thresh, float lowestScale = 0.0f, bool scaleUp = false);
-void InitSiftData(SiftData &data, int num = 1024, bool host = false, bool dev = true);
+void InitSiftData(SiftData &data, int num = 1024, bool host = false, bool dev = true, cudaStream_t stream = 0);// stream 0 is default stream
 void FreeSiftData(SiftData &data);
 void PrintSiftData(SiftData &data);
 double MatchSiftData(SiftData &data1, SiftData &data2);

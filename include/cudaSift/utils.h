@@ -8,9 +8,9 @@
 #include <intrin.h>
 #endif
 
-#define safeCall(err)       __safeCall(err, __FILE__, __LINE__)
-#define safeThreadSync()    __safeThreadSync(__FILE__, __LINE__)
-#define checkMsg(msg)       __checkMsg(msg, __FILE__, __LINE__)
+#define safeCall(err)       cudaSift::__safeCall(err, __FILE__, __LINE__)
+#define safeThreadSync()    cudaSift::__safeThreadSync(__FILE__, __LINE__)
+#define checkMsg(msg)       cudaSift::__checkMsg(msg, __FILE__, __LINE__)
 
 namespace cudaSift {
 

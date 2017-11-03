@@ -12,6 +12,7 @@
 
 #include <cudaSift/image.h>
 #include <cudaSift/sift.h>
+#include <cudaSift/utils.h>
 
 int ImproveHomography(cudaSift::SiftData &data, float *homography, int numLoops, float minScore, float maxAmbiguity, float thresh);
 void PrintMatchData(cudaSift::SiftData &siftData1, cudaSift::SiftData &siftData2, cudaSift::Image &img);
@@ -36,21 +37,39 @@ int main(int argc, char **argv)
   unsigned int h = limg.rows;
   std::cout << "Image size = (" << w << "," << h << ")" << std::endl;
 
-  // Initial Cuda images and download images to device
-  std::cout << "Initializing data..." << std::endl;
-  cudaSift::InitCuda(devNum);
-  cudaSift::Image img1, img2;
-  img1.Allocate(w, h, cudaSift::iAlignUp(w, 128), false, NULL, (float*)limg.data);
-  img2.Allocate(w, h, cudaSift::iAlignUp(w, 128), false, NULL, (float*)rimg.data);
-  img1.Download();
-  img2.Download();
-
   // Extract Sift features from images
   cudaSift::SiftData siftData1, siftData2;
   float initBlur = 1.0f;
   float thresh = 3.5f;
   cudaSift::InitSiftData(siftData1, 32768, true, true);
   cudaSift::InitSiftData(siftData2, 32768, true, true);
+
+  const bool useStreams = false;// use streams?  cudaSift assumes user manages these!
+
+  // Default stream is 0
+  cudaStream_t stream1 = 0;
+  cudaStream_t stream2 = 0;
+
+  if (useStreams) {
+    safeCall(cudaStreamCreate(&stream1));
+    safeCall(cudaStreamCreate(&stream2));
+  }
+
+  siftData1.stream = stream1;// if both are 0 they just operate on the same stream,
+  siftData2.stream = stream2;// AKA if not using streams this can be skipped
+
+  // Initial Cuda images and download images to device
+  std::cout << "Initializing data..." << std::endl;
+  cudaSift::InitCuda(devNum);
+  cudaSift::Image img1, img2;
+  img1.Allocate(w, h, cudaSift::iAlignUp(w, 128), false, NULL, (float*)limg.data);
+  img2.Allocate(w, h, cudaSift::iAlignUp(w, 128), false, NULL, (float*)rimg.data);
+
+  img1.stream = siftData1.stream;// if not using streams, these will both be zero
+  img2.stream = siftData2.stream;// AKA this step could be skipped
+
+  img1.Download();
+  img2.Download();
 
   // A bit of benchmarking
   for (thresh=1.00f;thresh<=4.01f;thresh+=0.50f) {
@@ -79,6 +98,12 @@ int main(int argc, char **argv)
   // Free Sift data from device
   cudaSift::FreeSiftData(siftData1);
   cudaSift::FreeSiftData(siftData2);
+
+  // User is responsible for managing the streams
+  if (useStreams) {
+    safeCall(cudaStreamDestroy(stream1));
+    safeCall(cudaStreamDestroy(stream2));
+  }
 
   std::cout << "SIFT Correspondences saved to 'data/limg_pts.pgm'." << std::endl;
   // Display the results

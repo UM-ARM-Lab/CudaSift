@@ -5,6 +5,8 @@
 #ifndef CUDA_SIFT_IMAGE_H
 #define CUDA_SIFT_IMAGE_H
 
+#include <cuda_runtime.h>
+
 namespace cudaSift {
 
 class Image {
@@ -16,10 +18,15 @@ public:
   float *t_data;
   bool d_internalAlloc;
   bool h_internalAlloc;
+
+  /* Assumed to be the same as whatever SiftData object is being used with this Image.
+   * see comment on `stream` member of SiftData in `sift.h`.
+   */
+  cudaStream_t stream;
 public:
   Image();
   ~Image();
-  void Allocate(int width, int height, int pitch, bool withHost, float *devMem = NULL, float *hostMem = NULL);
+  void Allocate(int width, int height, int pitch, bool withHost, float *devMem = NULL, float *hostMem = NULL, cudaStream_t stream = 0);
   double Download();
   double Readback();
   double InitTexture();
