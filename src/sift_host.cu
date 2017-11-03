@@ -40,7 +40,7 @@ void InitCuda(int devNum)
   printf("  Memory Clock Rate (MHz): %d\n", prop.memoryClockRate/1000);
   printf("  Memory Bus Width (bits): %d\n", prop.memoryBusWidth);
   printf("  Peak Memory Bandwidth (GB/s): %.1f\n\n",
-	 2.0*prop.memoryClockRate*(prop.memoryBusWidth/8)/1.0e6);
+         2.0*prop.memoryClockRate*(prop.memoryBusWidth/8)/1.0e6);
 }
 
 void ExtractSift(SiftData &siftData, Image &img, int numOctaves, double initBlur, float thresh, float lowestScale, bool scaleUp)
@@ -347,14 +347,14 @@ void PrintSiftData(SiftData &data)
     float *siftData = (float*)&h_data[i].data;
     for (int j=0;j<8;j++) {
       if (j==0)
-	printf("data = ");
+        printf("data = ");
       else
-	printf("       ");
+        printf("       ");
       for (int k=0;k<16;k++)
-	if (siftData[j+8*k]<0.05)
-	  printf(" .   ");
-	else
-	  printf("%.2f ", siftData[j+8*k]);
+        if (siftData[j+8*k]<0.05)
+          printf(" .   ");
+        else
+          printf("%.2f ", siftData[j+8*k]);
       printf("\n");
     }
   }

@@ -91,26 +91,26 @@ __global__ void FindMaxCorr(float *corrData, SiftPoint *sift1, SiftPoint *sift2,
   }
   //if (p1==1)
   //  printf("tx = %d, score = %.2f, scor2 = %.2f, index = %d\n",
-  //	   tx, maxScore[idx], maxScor2[idx], maxIndex[idx]);
+  //             tx, maxScore[idx], maxScor2[idx], maxIndex[idx]);
   __syncthreads();
   for (int len=8;len>0;len/=2) {
     if (tx<8) {
       float val = maxScore[idx+len];
       int i = maxIndex[idx+len];
       if (val>maxScore[idx]) {
-	maxScor2[idx] = maxScore[idx];
-	maxScore[idx] = val;
-	maxIndex[idx] = i;
+        maxScor2[idx] = maxScore[idx];
+        maxScore[idx] = val;
+        maxIndex[idx] = i;
       } else if (val>maxScor2[idx])
-	maxScor2[idx] = val;
+        maxScor2[idx] = val;
       float va2 = maxScor2[idx+len];
       if (va2>maxScor2[idx])
-	maxScor2[idx] = va2;
+        maxScor2[idx] = va2;
     }
     __syncthreads();
     //if (p1==1 && tx<len)
     //  printf("tx = %d, score = %.2f, scor2 = %.2f, index = %d\n",
-    //	     tx, maxScore[idx], maxScor2[idx], maxIndex[idx]);
+    //             tx, maxScore[idx], maxScor2[idx], maxIndex[idx]);
   }
   if (tx==6)
     sift1[p1].score = maxScore[ty*16];
@@ -125,7 +125,7 @@ __global__ void FindMaxCorr(float *corrData, SiftPoint *sift1, SiftPoint *sift2,
   __syncthreads();
   //if (tx==0)
   //  printf("index = %d/%d, score = %.2f, ambiguity = %.2f, match = %d\n",
-  //	p1, numPts1, sift1[p1].score, sift1[p1].ambiguity, sift1[p1].match);
+  //              p1, numPts1, sift1[p1].score, sift1[p1].ambiguity, sift1[p1].match);
 }
 
 template <int size>
@@ -143,7 +143,7 @@ __device__ void InvertMatrix(float elem[size][size], float res[size][size])
     for (int j=0;j<size;j++) {
       float temp = fabs(elem[i][j]);
       if (temp>big)
-	big = temp;
+        big = temp;
     }
     if (big>0.0)
       vv[i] = 1.0/big;
@@ -154,26 +154,26 @@ __device__ void InvertMatrix(float elem[size][size], float res[size][size])
     for (int i=0;i<j;i++) { // i<j
       float sum = elem[i][j]; // i<j (lower left)
       for (int k=0;k<i;k++) // k<i<j
-	sum -= elem[i][k]*elem[k][j]; // i>k (upper right), k<j (lower left)
+        sum -= elem[i][k]*elem[k][j]; // i>k (upper right), k<j (lower left)
       elem[i][j] = sum; // i<j (lower left)
     }
     float big = 0.0;
     for (int i=j;i<size;i++) { // i>=j
       float sum = elem[i][j]; // i>=j (upper right)
       for (int k=0;k<j;k++) // k<j<=i
-	sum -= elem[i][k]*elem[k][j]; // i>k (upper right), k<j (lower left)
+        sum -= elem[i][k]*elem[k][j]; // i>k (upper right), k<j (lower left)
       elem[i][j] = sum; // i>=j (upper right)
       float dum = vv[i]*fabs(sum);
       if (dum>=big) {
-	big = dum;
-	imax = i;
+        big = dum;
+        imax = i;
       }
     }
     if (j!=imax) { // imax>j
       for (int k=0;k<size;k++) {
-	float dum = elem[imax][k]; // upper right and lower left
-	elem[imax][k] = elem[j][k];
-	elem[j][k] = dum;
+        float dum = elem[imax][k]; // upper right and lower left
+        elem[imax][k] = elem[j][k];
+        elem[j][k] = dum;
       }
       d = -d;
       vv[imax] = vv[j];
@@ -184,7 +184,7 @@ __device__ void InvertMatrix(float elem[size][size], float res[size][size])
     if (j!=(size-1)) {
       float dum = 1.0/elem[j][j];
       for (int i=j+1;i<size;i++) // i>j
-	elem[i][j] *= dum; // i>j (upper right)
+        elem[i][j] *= dum; // i>j (upper right)
     }
   }
   for (int j=0;j<size;j++) {
@@ -197,8 +197,8 @@ __device__ void InvertMatrix(float elem[size][size], float res[size][size])
       float sum = b[ip];
       b[ip] = b[i];
       if (ii!=-1)
-	for (int j=ii;j<i;j++)
-	  sum -= elem[i][j]*b[j]; // i>j (upper right)
+        for (int j=ii;j<i;j++)
+          sum -= elem[i][j]*b[j]; // i>j (upper right)
       else if (sum!=0.0)
         ii = i;
       b[i] = sum;
@@ -206,7 +206,7 @@ __device__ void InvertMatrix(float elem[size][size], float res[size][size])
     for (int i=size-1;i>=0;i--) {
       float sum = b[i];
       for (int j=i+1;j<size;j++)
-	sum -= elem[i][j]*b[j]; // i<j (lower left)
+        sum -= elem[i][j]*b[j]; // i<j (lower left)
       b[i] = sum/elem[i][i]; // i==i (upper right)
     }
     for (int i=0;i<size;i++)

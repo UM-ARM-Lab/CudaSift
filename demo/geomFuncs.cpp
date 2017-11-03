@@ -26,7 +26,7 @@ int ImproveHomography(cudaSift::SiftData &data, float *homography, int numLoops,
     for (int i=0;i<numPts;i++) {
       cudaSift::SiftPoint &pt = mpts[i];
       if (pt.score<minScore || pt.ambiguity>maxAmbiguity)
-	continue;
+        continue;
       float den = A.at<double>(6)*pt.xpos + A.at<double>(7)*pt.ypos + 1.0f;
       float dx = (A.at<double>(0)*pt.xpos + A.at<double>(1)*pt.ypos + A.at<double>(2)) / den - pt.match_xpos;
       float dy = (A.at<double>(3)*pt.xpos + A.at<double>(4)*pt.ypos + A.at<double>(5)) / den - pt.match_ypos;
