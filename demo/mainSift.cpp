@@ -95,6 +95,10 @@ int main(int argc, char **argv)
   PrintMatchData(siftData1, siftData2, img1);
   cv::imwrite("data/limg_pts.pgm", limg);
 
+  // Free the cuda images (host and device)
+  img1.Destroy();
+  img2.Destroy();
+
   // Free Sift data from device
   cudaSift::FreeSiftData(siftData1);
   cudaSift::FreeSiftData(siftData2);

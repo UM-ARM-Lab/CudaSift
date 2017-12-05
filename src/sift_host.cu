@@ -138,7 +138,7 @@ void ExtractSift(SiftData &siftData, Image &img, int numOctaves, double initBlur
   }
 #endif
   double totTime = timer.read();
-#ifndef VERBOSE
+#ifdef VERBOSE
   printf("Total time incl memory =      %.2f ms\n", totTime);
 #endif
 }

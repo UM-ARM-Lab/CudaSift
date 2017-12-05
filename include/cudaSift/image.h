@@ -25,12 +25,15 @@ public:
   cudaStream_t stream;
 public:
   Image();
-  ~Image();
+  // ! DANGER ! desctructor does nothing, user is responsible for calling Destroy!
+  // this is different than the upstream
+  ~Image() { }
   void Allocate(int width, int height, int pitch, bool withHost, float *devMem = NULL, float *hostMem = NULL, cudaStream_t stream = 0);
   double Download();
   double Readback();
   double InitTexture();
   double CopyToTexture(Image &dst, bool host);
+  void Destroy();
 };
 
 int iDivUp(int a, int b);

@@ -43,7 +43,7 @@ Image::Image() :
 
 }
 
-Image::~Image()
+void Image::Destroy()
 {
   if (d_internalAlloc && d_data!=NULL)
     safeCall(cudaFree(d_data));
